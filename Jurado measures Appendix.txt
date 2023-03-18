@@ -1,0 +1,174 @@
+#################################################################################################################################################################################################################
+# This code is designed to produce the supplementary analysis of the Jurado et al. (2015) uncertainty data as used for the paper "Uncertainty, volatility and the persistence norms of financial time series"	#
+# Prior to running the code please prepare the working directory according to the instructions in the data prepration file											#
+#																										#
+# Reference for Jurado et al. (2015): Jurado, K., Ludvigson, S. C., & Ng, S. (2015). Measuring uncertainty. American Economic Review, 105(3), 1177-1216. 							#																			#
+# If you make use of the code then please do not forget to cite the paper to which this code relates														#
+#																										#
+# Suggested citation: Rudkin, S., Qiu, W., and Dlotko, P. (2023) "Uncertainty, volatility and the persistence norms of financial time series", Expert Systems with Applications, 119894 			#
+#################################################################################################################################################################################################################
+
+
+# No packages are used for this code file
+# Use the following user defined functions
+
+latout<-function(data,filename){
+ if(missing(filename)) filename<-"latout.txt"
+ a001<-nrow(data)
+ a002<-ncol(data)
+ a003<-a002-1
+ mat1<-matrix(0,nrow=a001,ncol=1)
+ for(i in 1:a001){
+   for(k in 1:a003){
+     mat1[i,1]<-paste(mat1[i,1],data[i,k],sep="&")
+   }
+ }
+ for(i in 1:a001){
+  mat1[i,1]<-paste0(mat1[i,1],"&",data[i,a002],"\\","\\")
+ }
+ write.table(as.data.frame(mat1),filename,sep="\n",row.names=FALSE,quote=FALSE)
+} 
+
+corm<-function(vec,n,spear){
+ if(missing(spear)){spear<-"FALSE"}
+ a101<-ncol(vec)
+ a102<-ncol(vec)
+ cor001<-matrix(0,nrow=a101,ncol=a102)
+# print(paste0("Rows: ",a101," Cols: ",a102))
+ for(i in 1:a101){
+  for(j in 1:a102){
+   a201<-cor(vec[,i],vec[,j])
+   a202<-cor(vec[,i],vec[,j],method="spearman")
+   cor001[i,j]<-ifelse(i>=j,a201,a202) ### Determines which number to put in the matrix
+  }
+ }
+ m001a<-matrix(0,nrow=a101,ncol=a102)
+ a002<-1
+ a003<-(n+1)
+ for(i in 1:a101){
+  for(j in 1:a102){
+    m001a[i,j]<-ifelse(abs(cor001[i,j])<a002,formatC(signif(mean(cor001[i,j],digits=n)),digits=n,format="f",flag="#"),formatC(signif(mean(cor001[i,j],digits=a003)),digits=a003,format="g",flag="#"))
+  }
+ }
+ a103<-a101-1
+ for(i in 1:a103){
+  a104<-i+1
+  for(j in a104:4){
+   m001a[i,j]<-ifelse(spear==TRUE,m001a[i,j],"") 
+  }
+ }
+ for(i in 1:a101){
+  m001a[i,i]<-1
+ }
+ return(m001a)
+}
+
+
+###########################################################################################################################################################################################################
+# In order to use this code you will need a file with the stock index returns from Yahoo Finance and a single csv containing the uncertainty indexes prepared according to the file "uncertaintypre.txt"  #
+#																									  #
+# Please replace the file names with those that you have created. Likewise set the working directory accordingly											  #
+###########################################################################################################################################################################################################
+
+setwd("D://uncertainty/")
+
+### Read in uncertainty
+
+dtu<-read.table("uncertainty1221.csv",sep=",",header=TRUE)
+
+### Correct format of date variable name
+
+names(dtu)<-c("dt",names(dtu)[2:19])
+
+### Drop data from before 1st January 1993 to match with sample in the paper
+
+dtu<-dtu[391:nrow(dtu),]
+
+### Convert dt to date
+
+dtu$dt<-as.Date(dtu$dt,format="%d/%m/%Y")
+
+### Create graphs
+
+# 1-month ahead indexes
+
+png("FigureA1a.png",width=1200,height=600)
+plot(dtu$dt,dtu$finunc1,type="l",xlab="Date",ylab="Uncertainty Index",ylim=c(0,1.6),cex=2)
+lines(dtu$dt,dtu$finunc1,lwd=3)
+lines(dtu$dt,dtu$macunc1,lwd=3,col="red")
+lines(dtu$dt,dtu$reaunc1,lwd=3,col="blue")
+leg.text=c("Financial","Macroeconomic","Real")
+legend("bottomright",leg.text,lwd=c(3,3,3),col=c("black","red","blue"),cex=2)
+dev.off()
+
+png("FigureA1b.png",width=1200,height=600)
+plot(dtu$dt,dtu$finunc1,type="l",xlab="Date",ylab="Uncertainty Index",ylim=c(0,1.6),cex=2)
+lines(dtu$dt,dtu$finunc1,lwd=3)
+lines(dtu$dt,dtu$finunc3,lwd=3,col="red")
+lines(dtu$dt,dtu$finunc12,lwd=3,col="blue")
+leg.text=c("1-Month Ahead","3-Months Ahead","12-Months Ahead")
+legend("bottomright",leg.text,lwd=c(3,3,3),col=c("black","red","blue"),cex=2)
+dev.off()
+
+png("FigureA1c.png",width=1200,height=600)
+plot(dtu$dt,dtu$finecu1,type="l",xlab="Date",ylab="Uncertainty Index",ylim=c(0,1.6),cex=2)
+lines(dtu$dt,dtu$finecu1,lwd=3)
+lines(dtu$dt,dtu$finecu3,lwd=3,col="red")
+lines(dtu$dt,dtu$finecu12,lwd=3,col="blue")
+leg.text=c("1-Month Ahead","3-Months Ahead","12-Months Ahead")
+legend("bottomright",leg.text,lwd=c(3,3,3),col=c("black","red","blue"),cex=2)
+dev.off()
+
+png("FigureA1d.png",width=1200,height=600)
+plot(dtu$dt,dtu$macunc1,type="l",xlab="Date",ylab="Uncertainty Index",ylim=c(0,1.6),cex=2)
+lines(dtu$dt,dtu$macunc1,lwd=3)
+lines(dtu$dt,dtu$macunc3,lwd=3,col="red")
+lines(dtu$dt,dtu$macunc12,lwd=3,col="blue")
+leg.text=c("1-Month Ahead","3-Months Ahead","12-Months Ahead")
+legend("bottomright",leg.text,lwd=c(3,3,3),col=c("black","red","blue"),cex=2)
+dev.off()
+
+png("FigureA1e.png",width=1200,height=600)
+plot(dtu$dt,dtu$macecu1,type="l",xlab="Date",ylab="Uncertainty Index",ylim=c(0,1.6),cex=2)
+lines(dtu$dt,dtu$macecu1,lwd=3)
+lines(dtu$dt,dtu$macecu3,lwd=3,col="red")
+lines(dtu$dt,dtu$macecu12,lwd=3,col="blue")
+leg.text=c("1-Month Ahead","3-Months Ahead","12-Months Ahead")
+legend("bottomright",leg.text,lwd=c(3,3,3),col=c("black","red","blue"),cex=2)
+dev.off()
+
+
+png("FigureA1f.png",width=1200,height=600)
+plot(dtu$dt,dtu$reaunc1,type="l",xlab="Date",ylab="Uncertainty Index",ylim=c(0,1.6),cex=2)
+lines(dtu$dt,dtu$reaunc1,lwd=3)
+lines(dtu$dt,dtu$reaunc3,lwd=3,col="red")
+lines(dtu$dt,dtu$reaunc12,lwd=3,col="blue")
+leg.text=c("1-Month Ahead","3-Months Ahead","12-Months Ahead")
+legend("bottomright",leg.text,lwd=c(3,3,3),col=c("black","red","blue"),cex=2)
+dev.off()
+
+png("FigureA1g.png",width=1200,height=600)
+plot(dtu$dt,dtu$reaecu1,type="l",xlab="Date",ylab="Uncertainty Index",ylim=c(0,1.6),cex=2)
+lines(dtu$dt,dtu$reaecu1,lwd=3)
+lines(dtu$dt,dtu$reaecu3,lwd=3,col="red")
+lines(dtu$dt,dtu$reaecu12,lwd=3,col="blue")
+leg.text=c("1-Month Ahead","3-Months Ahead","12-Months Ahead")
+legend("bottomright",leg.text,lwd=c(3,3,3),col=c("black","red","blue"),cex=2)
+dev.off()
+
+##############################
+# Produce correlation matrix #
+##############################
+
+
+dtu2<-dtu[,2:19] ### Limit to just uncertainty indexes
+
+cm1<-corm(dtu2,3,spear="TRUE") ### Produce correlation matrix with spearmans rho
+
+latout(cm1,"TableA0.txt") ### Output table in latex form
+
+
+
+
+
+ 
