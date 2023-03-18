@@ -6,6 +6,9 @@ Within this repository there are a series of files which may be used to replicat
 There are 4 files in total:
  
 Uncertainty Data Preparation.txt describes the process undertaken to prepare the uncertainty index data from Jurado et al. (2015) (https://www.sydneyludvigson.com/macro-and-financial-uncertainty-indexes)
+
 Uncertainty and Norms Code.txt works through the production of the persistence norms and the regressions of the main paper
+
 Uncertainty and Norms VAR Code.txt contains details of the VAR regressions included in the main paper
+
 Jurado Measures Appendix.txt contains codes for robustness checks on the choice of uncertainty measure
